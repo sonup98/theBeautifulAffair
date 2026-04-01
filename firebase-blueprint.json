@@ -1,0 +1,81 @@
+{
+  "entities": {
+    "Product": {
+      "title": "Product",
+      "description": "A fashion product in the store",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "sub": { "type": "string" },
+        "price": { "type": "number" },
+        "originalPrice": { "type": "number" },
+        "category": { "type": "string" },
+        "badge": { "type": "string" },
+        "emoji": { "type": "string" },
+        "imageUrl": { "type": "string", "format": "uri" },
+        "bgColor": { "type": "string" },
+        "accentColor": { "type": "string" },
+        "isNewArrival": { "type": "boolean" },
+        "createdAt": { "type": "number" }
+      },
+      "required": ["id", "name", "price", "category", "emoji", "bgColor", "accentColor"]
+    },
+    "Category": {
+      "title": "Category",
+      "description": "A product category",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "label": { "type": "string" }
+      },
+      "required": ["id", "name", "label"]
+    },
+    "Settings": {
+      "title": "Settings",
+      "description": "Store-wide settings",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "heroImageUrl": { "type": "string", "format": "uri" },
+        "updatedAt": { "type": "number" }
+      },
+      "required": ["id"]
+    },
+    "Testimonial": {
+      "title": "Testimonial",
+      "description": "A customer testimonial",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "role": { "type": "string" },
+        "content": { "type": "string" },
+        "rating": { "type": "number" },
+        "avatarUrl": { "type": "string", "format": "uri" },
+        "productImageUrl": { "type": "string", "format": "uri" },
+        "createdAt": { "type": "number" }
+      },
+      "required": ["id", "name", "content", "rating"]
+    }
+  },
+  "firestore": {
+    "/products/{productId}": {
+      "schema": "Product",
+      "description": "Collection of all products"
+    },
+    "/categories/{categoryId}": {
+      "schema": "Category",
+      "description": "Collection of all categories"
+    },
+    "/settings/{settingId}": {
+      "schema": "Settings",
+      "description": "Collection of store-wide settings"
+    },
+    "/testimonials/{testimonialId}": {
+      "schema": "Testimonial",
+      "description": "Collection of customer testimonials"
+    }
+  }
+}

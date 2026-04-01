@@ -1,0 +1,135 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: products
+    // Document ID: auto-generated
+    // Fields:
+    //   - id: string (optional)
+    //   - name: string (required, 1-100 chars)
+    //   - sub: string (optional)
+    //   - price: number (required, positive)
+    //   - originalPrice: number (optional, positive)
+    //   - category: string (required)
+    //   - badge: string (optional)
+    //   - emoji: string (required)
+    //   - bgColor: string (required, hex format)
+    //   - accentColor: string (required, hex format)
+    //   - isNewArrival: bool (required)
+    //   - createdAt: timestamp/number (required)
+    //
+    // Collection: categories
+    // Document ID: slug (e.g., 'scrunchie')
+    // Fields:
+    //   - id: string (required)
+    //   - name: string (required)
+    //   - label: string (required)
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && 
+        ((exists(/databases/$(database)/documents/users/$(request.auth.uid)) && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin') || 
+         (request.auth.token.email == "ghanashyamp0987@gmail.com") ||
+         (request.auth.token.get('email', '') == "ghanashyamp0987@gmail.com"));
+    }
+
+    function isValidProduct(data) {
+      return data.keys().hasAll(['name', 'price', 'category', 'emoji', 'bgColor', 'accentColor', 'isNewArrival', 'createdAt']) &&
+             data.name is string && data.name.size() > 0 && data.name.size() <= 100 &&
+             data.price is number && data.price >= 0 &&
+             data.category is string &&
+             data.emoji is string &&
+             data.bgColor is string && data.bgColor.matches("^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$") &&
+             data.accentColor is string && data.accentColor.matches("^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$") &&
+             data.isNewArrival is bool &&
+             (data.createdAt is number || data.createdAt is timestamp);
+    }
+
+    function isValidCategory(data) {
+      return data.keys().hasAll(['id', 'name', 'label']) &&
+             data.id is string &&
+             data.name is string &&
+             data.label is string;
+    }
+
+    function isValidSettings(data) {
+      return data.keys().hasAll(['id']) &&
+             data.id is string &&
+             (!('heroImageUrl' in data) || data.heroImageUrl is string) &&
+             (!('updatedAt' in data) || data.updatedAt is number);
+    }
+
+    function isValidTestimonial(data) {
+      return data.keys().hasAll(['name', 'content', 'rating']) &&
+             data.name is string && data.name.size() > 0 &&
+             data.content is string && data.content.size() > 0 &&
+             data.rating is number && data.rating >= 1 && data.rating <= 5 &&
+             (!('id' in data) || data.id is string) &&
+             (!('role' in data) || data.role is string) &&
+             (!('avatarUrl' in data) || data.avatarUrl is string) &&
+             (!('productImageUrl' in data) || data.productImageUrl is string) &&
+             (!('createdAt' in data) || data.createdAt is number) &&
+             (!('updatedAt' in data) || data.updatedAt is number);
+    }
+
+    function isValidUser(data) {
+      return data.keys().hasAll(['email', 'role', 'updatedAt']) &&
+             data.email is string &&
+             data.role is string &&
+             data.updatedAt is number;
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /products/{productId} {
+      allow read: if true;
+      allow create, update: if isAdmin() && isValidProduct(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    match /test/{docId} {
+      allow read, write: if isAdmin();
+    }
+
+    match /categories/{categoryId} {
+      allow read: if true;
+      allow create, update: if isAdmin() && isValidCategory(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    match /settings/{settingId} {
+      allow read: if true;
+      allow write: if isAdmin() && isValidSettings(request.resource.data);
+    }
+
+    match /testimonials/{testimonialId} {
+      allow read, get, list: if true;
+      allow write, create, update: if isAdmin() && isValidTestimonial(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    match /users/{userId} {
+      allow read: if isAuthenticated() && request.auth.uid == userId;
+      allow write: if (isAuthenticated() && request.auth.uid == userId && request.auth.token.get('email', '') == "ghanashyamp0987@gmail.com") || isAdmin();
+    }
+
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
