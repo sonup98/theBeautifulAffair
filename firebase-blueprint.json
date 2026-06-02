@@ -14,12 +14,19 @@
         "badge": { "type": "string" },
         "emoji": { "type": "string" },
         "imageUrl": { "type": "string", "format": "uri" },
+        "imageUrls": { "type": "array", "items": { "type": "string", "format": "uri" } },
+        "description": { "type": "string" },
+        "colors": { "type": "array", "items": { "type": "string" } },
+        "sizes": { "type": "array", "items": { "type": "string" } },
+        "isBestSeller": { "type": "boolean" },
+        "discount": { "type": "number" },
         "bgColor": { "type": "string" },
         "accentColor": { "type": "string" },
         "isNewArrival": { "type": "boolean" },
+        "stock": { "type": "number" },
         "createdAt": { "type": "number" }
       },
-      "required": ["id", "name", "price", "category", "emoji", "bgColor", "accentColor"]
+      "required": ["id", "name", "price", "category", "emoji", "bgColor", "accentColor", "stock"]
     },
     "Category": {
       "title": "Category",
@@ -39,6 +46,7 @@
       "properties": {
         "id": { "type": "string" },
         "heroImageUrl": { "type": "string", "format": "uri" },
+        "contactImageUrl": { "type": "string", "format": "uri" },
         "updatedAt": { "type": "number" }
       },
       "required": ["id"]
@@ -58,6 +66,26 @@
         "createdAt": { "type": "number" }
       },
       "required": ["id", "name", "content", "rating"]
+    },
+    "Order": {
+      "title": "Order",
+      "description": "A customer order",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "customerName": { "type": "string" },
+        "address": { "type": "string" },
+        "pincode": { "type": "string" },
+        "district": { "type": "string" },
+        "state": { "type": "string" },
+        "phone": { "type": "string" },
+        "items": { "type": "array" },
+        "total": { "type": "number" },
+        "status": { "type": "string", "enum": ["pending", "processing", "completed"] },
+        "createdAt": { "type": "number" },
+        "paymentId": { "type": "string" }
+      },
+      "required": ["id", "customerName", "address", "pincode", "district", "state", "phone", "items", "total", "status", "createdAt"]
     }
   },
   "firestore": {
@@ -76,6 +104,10 @@
     "/testimonials/{testimonialId}": {
       "schema": "Testimonial",
       "description": "Collection of customer testimonials"
+    },
+    "/orders/{orderId}": {
+      "schema": "Order",
+      "description": "Collection of customer orders"
     }
   }
 }
